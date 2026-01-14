@@ -1,0 +1,147 @@
+managed implementation in class zrap110_BP_TravelTP_004 unique;
+strict ( 2 );
+with draft;
+define behavior for ZRAP110_R_TRAVELTP_004 alias Travel
+persistent table zrap110_atrav004
+draft table zrap110_dtrav004
+etag master LocalLastChangedAt
+lock master total etag LastChangedAt
+authorization master ( global )
+late numbering
+{
+  field ( readonly )
+  LastChangedAt,
+  LocalLastChangedAt;
+
+  field ( readonly ) TravelID;
+  field ( readonly ) TotalPrice;
+  field ( mandatory ) BeginDate, EndDate;
+
+
+  create;
+  update ( features : instance );
+  delete ( features : instance );
+
+  //action(s)
+  action ( features : instance ) acceptTravel result [1] $self;
+  action ( features : instance ) rejectTravel result [1] $self;
+  ///The action recalcTotalPrice has the option internal and can, therefore,
+  ///only be accessed from the business logic inside the BO implementation
+  ///such as from a determination or from another action. It has no result parameter.
+  internal action recalcTotalPrice;
+  static factory action createTravel parameter ZRAP110_A_Create_Travel_004 [1];
+
+  // validation(s)
+  validation validateCustomer on save { create; field CustomerID; }
+  validation validateAgency on save { create; field AgencyID; }
+  validation validateDates on save { create; field BeginDate, EndDate; }
+
+  determine action checkDates
+  {
+    validation validateDates;
+  }
+
+
+  //determination(s)
+  ///setInitialTravelValues to set default values of a travel entity instance during its creation
+  determination setInitialTravelValues on modify { create; }
+  ///calculateTotalPrice to trigger the calculation of the total price of a travel entity instance
+  ///during its creation and each time BookingFee or CurrencyCode has changed.
+  determination calculateTotalPrice on modify { create; field BookingFee, CurrencyCode; }
+
+  draft action ( features : instance ) Edit;
+  draft action Activate optimized;
+  draft action Discard;
+  draft action Resume;
+
+  //In order to have draft instances being checked by validations and determinations being executed
+  //before they become active, they have to be specified for the draft determine action prepare in
+  //the behavior definition.
+  draft determine action Prepare
+  {
+    validation validateCustomer;
+    validation validateAgency;
+    validation validateDates;
+    validation Booking~validateBookingStatus;
+  }
+
+  mapping for zrap110_atrav004
+    {
+      TravelID           = TRAVEL_ID;
+      AgencyID           = AGENCY_ID;
+      CustomerID         = CUSTOMER_ID;
+      BeginDate          = BEGIN_DATE;
+      EndDate            = END_DATE;
+      BookingFee         = BOOKING_FEE;
+      TotalPrice         = TOTAL_PRICE;
+      CurrencyCode       = CURRENCY_CODE;
+      Description        = DESCRIPTION;
+      OverallStatus      = OVERALL_STATUS;
+      Attachment         = ATTACHMENT;
+      MimeType           = MIME_TYPE;
+      FileName           = FILE_NAME;
+      LastChangedAt      = LAST_CHANGED_AT;
+      CreatedBy          = CREATED_BY;
+      CreatedAt          = CREATED_AT;
+      LocalLastChangedBy = LOCAL_LAST_CHANGED_BY;
+      LocalLastChangedAt = LOCAL_LAST_CHANGED_AT;
+    }
+
+  association _Booking { create; with draft; }
+
+}
+
+define behavior for ZRAP110_R_BOOKINGTP_004 alias Booking
+implementation in class zrap110_BP_BookingTP_004 unique
+persistent table zrap110_abook004
+draft table zrap110_dbook004
+etag master LocalLastChangedAt
+lock dependent by _Travel
+authorization dependent by _Travel
+late numbering
+{
+  field ( readonly )
+  TravelID,
+  LocalLastChangedAt;
+
+  //static field control
+  field ( readonly ) BookingID;
+  field ( mandatory ) CustomerID, CarrierID, Flightdate, BookingStatus;
+
+
+  update;
+  delete;
+
+  //validation(s)
+  validation validateBookingStatus on save { create; field BookingStatus; }
+
+  //determination(s)
+  ///setInitialBookingValues to set the default value of a booking entity instance during its creation
+  determination setInitialBookingValues on modify { create; } //copy & paste
+  ///calculateTotalPrice to trigger the calculation of the total price of the parent travel entity
+  ///instance during its creation and each time FlightPrice or CurrencyCode has changed.
+  determination calculateTotalPrice on modify { create; field FlightPrice, CurrencyCode; }  //**
+
+  //function(s)
+  ///getDaysToFlight to calculate the value of the virtual elements BookingStatusIndicator,
+  ///InitialDaysToFlight, RemainingDaysToFlight, and DaysToFlightIndicator
+  function getDaysToFlight result [1] ZRAP110_A_DaysToFlight_004;
+
+  mapping for zrap110_abook004
+    {
+      TravelID           = TRAVEL_ID;
+      BookingID          = BOOKING_ID;
+      BookingDate        = BOOKING_DATE;
+      CustomerID         = CUSTOMER_ID;
+      CarrierID          = CARRIER_ID;
+      ConnectionID       = CONNECTION_ID;
+      FlightDate         = FLIGHT_DATE;
+      BookingStatus      = BOOKING_STATUS;
+      FlightPrice        = FLIGHT_PRICE;
+      CurrencyCode       = CURRENCY_CODE;
+      LocalLastChangedAt = LOCAL_LAST_CHANGED_AT;
+    }
+
+  association _Travel { with draft; }
+
+}
