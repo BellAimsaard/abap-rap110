@@ -22,14 +22,14 @@ CLASS zrap110_calc_book_elem_004 IMPLEMENTATION.
     LOOP AT it_requested_calc_elements ASSIGNING FIELD-SYMBOL(<ls_booking_calc_element>).
       CASE <ls_booking_calc_element>.
         WHEN 'INITIALDAYSTOFLIGHT'.
-          "COLLECT `BOOKINGDATE` INTO et_requested_orig_elements.
-          "COLLECT `FLIGHTDATE` INTO et_requested_orig_elements.
+          COLLECT `BOOKINGDATE` INTO et_requested_orig_elements.
+          COLLECT `FLIGHTDATE` INTO et_requested_orig_elements.
         WHEN 'REMAININGDAYSTOFLIGHT'.
-          "COLLECT `FLIGHTDATE` INTO et_requested_orig_elements.
+          COLLECT `FLIGHTDATE` INTO et_requested_orig_elements.
         WHEN 'DAYSTOFLIGHTINDICATOR'.
-          "COLLECT `FLIGHTDATE` INTO et_requested_orig_elements.
+          COLLECT `FLIGHTDATE` INTO et_requested_orig_elements.
         WHEN 'BOOKINGSTATUSINDICATOR'.
-          "COLLECT `BOOKINGSTATUS` INTO et_requested_orig_elements.
+          COLLECT `BOOKINGSTATUS` INTO et_requested_orig_elements.
       ENDCASE.
     ENDLOOP.
   ENDMETHOD.
@@ -109,11 +109,11 @@ CLASS zrap110_calc_book_elem_004 IMPLEMENTATION.
         "VE BookingStatusIndicator: booking status indicator
         "(criticality: 1  = red | 2 = orange  | 3 = green)
         CASE cs_booking-BookingStatus.
-          WHEN 'X'.
+          WHEN 'X'. "Cancelled
             cs_booking-BookingStatusIndicator = 1.
-          WHEN 'N'.
+          WHEN 'N'. "New
             cs_booking-BookingStatusIndicator = 2.
-          WHEN 'B'.
+          WHEN 'B'. "Booked
             cs_booking-BookingStatusIndicator = 3.
           WHEN OTHERS.
         ENDCASE.

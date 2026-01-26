@@ -87,7 +87,7 @@ late numbering
       LocalLastChangedAt = LOCAL_LAST_CHANGED_AT;
     }
 
-  association _Booking { create; with draft; }
+  association _Booking { create ( features : instance ); with draft; }
 
 }
 

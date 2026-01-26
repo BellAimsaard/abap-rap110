@@ -110,9 +110,11 @@ annotate view ZRAP110_C_TRAVELTP_004 with
   @UI.lineItem: [ {
   position: 100 ,
   importance: #HIGH
+  , criticality: 'OverallStatusIndicator' //added line
   } ]
   @UI.identification: [ {
     position: 100
+    , criticality: 'OverallStatusIndicator' //added line
   } ]
   @UI.textArrangement: #TEXT_ONLY
   OverallStatus;
